@@ -11,8 +11,9 @@ from PIL import Image
 import vllm.envs as envs
 from vllm.connections import global_http_connection
 from vllm.logger import init_logger
-from vllm.multimodal.base import MultiModalDataDict, PlaceholderRange
 from vllm.transformers_utils.tokenizer import AnyTokenizer, get_tokenizer
+
+from .inputs import MultiModalDataDict, PlaceholderRange
 
 logger = init_logger(__name__)
 
@@ -206,9 +207,9 @@ def try_import_audio_packages() -> Tuple[Any, Any]:
     try:
         import librosa
         import soundfile
-    except ImportError:
+    except ImportError as exc:
         raise ImportError(
-            "Please install vllm[audio] for audio support.") from None
+            "Please install vllm[audio] for audio support.") from exc
     return librosa, soundfile
 
 
@@ -344,9 +345,9 @@ def try_import_video_packages() -> Any:
     try:
         import cv2
         import decord
-    except ImportError:
+    except ImportError as exc:
         raise ImportError(
-            "Please install vllm[video] for video support.") from None
+            "Please install vllm[video] for video support.") from exc
     return cv2, decord
 
 
