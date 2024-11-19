@@ -24,7 +24,6 @@ from vllm.model_executor.layers.sampler import SamplerOutput, get_sampler
 from vllm.model_executor.model_loader.loader import DefaultModelLoader
 from vllm.model_executor.sampling_metadata import SamplingMetadata
 from vllm.model_executor.models.module_mapping import MultiModelKeys
-from vllm.multimodal import (MULTIMODAL_REGISTRY, MultiModalInputs,
 from vllm.multimodal import (MULTIMODAL_REGISTRY, MultiModalKwargs,
                              NestedTensors)
 from vllm.multimodal.utils import (cached_get_tokenizer,
@@ -344,9 +343,7 @@ class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
     packed_modules_mapping = {}
     #should all llama3 modules be supported here?
     #source: https://github.com/fixie-ai/ultravox/blob/812f58c5f50c02589c08668d9afe6e4f8c6d0d74/ultravox/model/ultravox_config.py#L20
-    supported_lora_modules = [
-        'linear_k', 'linear_q', 'k_proj', 'q_proj'
-    ]
+    supported_lora_modules = ['linear_k', 'linear_q', 'k_proj', 'q_proj']
     embedding_modules = {}
     embedding_padding_modules = []
 
@@ -404,8 +401,8 @@ class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
         """
         Get the module prefix in multimodal models
         """
-        return MultiModelKeys.from_string_field(language_model="language_model",
-                                                tower_model="audio_tower")
+        return MultiModelKeys.from_string_field(
+            language_model="language_model", tower_model="audio_tower")
 
     def _audio_features_to_embeddings(
             self, input_features: torch.Tensor) -> torch.Tensor:
