@@ -42,7 +42,6 @@ def do_sample(llm: vllm.LLM, lora_path: str, lora_id: int) -> List[str]:
     sampling_params = vllm.SamplingParams(
         temperature=0,
         max_tokens=5,
-        stop_token_ids=[128001, 128009],  # eos_id, eot_id
     )
     
     inputs = [_get_prompt(1, "Describe the audio above.", VLLM_PLACEHOLDER)]
@@ -56,7 +55,7 @@ def do_sample(llm: vllm.LLM, lora_path: str, lora_id: int) -> List[str]:
     return None
 
 
-def test_fixie_lora(minicpmv_lora_files):
+def test_fixie_lora(sql_lora_files):
     llm = vllm.LLM(
         MODEL_NAME,
         max_num_seqs=2,
@@ -64,8 +63,11 @@ def test_fixie_lora(minicpmv_lora_files):
         max_loras=4,
         max_lora_rank=64,
         trust_remote_code=True,
+        dtype="bfloat16",
+        max_model_len=4096,
+        enforce_eager=True
     )
-    output1 = do_sample(llm, minicpmv_lora_files, lora_id=1)
+    output1 = do_sample(llm, sql_lora_files, lora_id=1)
     for i in range(len(EXPECTED_OUTPUT)):
         assert EXPECTED_OUTPUT[i].startswith(output1[i])
     return None
