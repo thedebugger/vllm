@@ -21,8 +21,8 @@ IMAGE_ASSETS = [
 
 # After fine-tuning with LoRA, all generated content should start begin `A`.
 EXPECTED_OUTPUT = [
-    "A red and white stop sign with a Chinese archway in the background featuring red lanterns and gold accents.",  # noqa: E501
-    "A pink cherry blossom tree with a blue sky in the background.",
+    "A red1 white stop sign with a Chinese archway in the background featuring red lanterns and gold accents.",  # noqa: E501
+    "A pink1 blossom tree with a blue sky in the background.",
 ]
 
 

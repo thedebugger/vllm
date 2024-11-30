@@ -510,7 +510,16 @@ class LoRAModelManager(AdapterModelManager):
             # aims to prevent this error
             if self.supports_mm and not isinstance(new_module,
                                                    BaseLayerWithLoRA):
+                logger.warning(
+                    "%s module will be ignored because it isn't of type BaseLayerWithLoRA",
+                    module_name,
+                )
                 continue
+
+            logger.info(
+                    "Going to apply lora on %s module",
+                    module_name,
+                )
             self.register_module(module_name, new_module)
             self._register_packed_modules(module_name)
             # All lora layers share the same punica_wrapper based on reference.

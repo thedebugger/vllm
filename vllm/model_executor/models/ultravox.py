@@ -343,7 +343,7 @@ class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
     packed_modules_mapping = {}
     #should all llama3 modules be supported here?
     #source: https://github.com/fixie-ai/ultravox/blob/812f58c5f50c02589c08668d9afe6e4f8c6d0d74/ultravox/model/ultravox_config.py#L20
-    supported_lora_modules = ['v_proj', 'o_proj', 'k_proj', 'q_proj']
+    supported_lora_modules = ['up_proj', 'down_proj', 'gate_proj', 'v_proj', 'o_proj', 'k_proj', 'q_proj']
     embedding_modules = {}
     embedding_padding_modules = []
 
