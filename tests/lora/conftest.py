@@ -199,6 +199,9 @@ def baichuan_regex_lora_files():
 def minicpmv_lora_files():
     return snapshot_download(repo_id="jeeejeee/minicpmv25-lora-pokemon")
 
+@pytest.fixture(scope="session")
+def legal_llama_lora_files():
+    return snapshot_download(repo_id="etavolt/legal-lora-llama3-V2")
 
 @pytest.fixture(scope="session")
 def tinyllama_lora_files():
