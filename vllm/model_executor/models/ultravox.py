@@ -13,6 +13,7 @@ from torch import nn
 from torch.nn import functional as F
 from transformers.models.whisper import WhisperFeatureExtractor
 from transformers.models.whisper.modeling_whisper import WhisperEncoder
+from vllm.logger import init_logger
 
 from vllm.attention import AttentionMetadata
 from vllm.config import VllmConfig
@@ -41,6 +42,7 @@ from .utils import (AutoWeightsLoader, WeightsMapper, flatten_bn,
 _AUDIO_PLACEHOLDER_TOKEN = 128002
 _AUDIO_TOKENS_PER_SECOND = 6.25
 
+logger = init_logger(__name__)
 
 class UltravoxAudioFeatureInputs(TypedDict):
     type: Literal["audio_features"]
@@ -339,9 +341,18 @@ class ModifiedWhisperEncoder(WhisperEncoder):
 @INPUT_REGISTRY.register_dummy_data(dummy_data_for_ultravox)
 @INPUT_REGISTRY.register_input_processor(input_processor_for_ultravox)
 class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
-    #TODO: not sure what is right thing to do here yet
-    packed_modules_mapping = {}
-    #should all llama3 modules be supported here?
+    #TODO: need more investigation
+    packed_modules_mapping = {
+        "qkv_proj": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+        ],
+        "gate_up_proj": [
+            "gate_proj",
+            "up_proj",
+        ],
+    }
     #source: https://github.com/fixie-ai/ultravox/blob/812f58c5f50c02589c08668d9afe6e4f8c6d0d74/ultravox/model/ultravox_config.py#L20
     supported_lora_modules = ['up_proj', 'down_proj', 'gate_proj', 'v_proj', 'o_proj', 'k_proj', 'q_proj']
     embedding_modules = {}
