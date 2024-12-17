@@ -358,10 +358,6 @@ class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
 
         return get_sampler()
 
-    # Following PR: https://github.com/vllm-project/vllm/pull/7199/files
-    # check language_model and audio_tower prefixes
-    # can't tell if vLLM will apply audio lora or not based on following warning:
-    # https://github.com/vllm-project/vllm/pull/7199/files#diff-d3df23c3e3bcfe97ee8507061c6de54f0eff23a8c75d7f5999062c42245290f8R1033
     def get_mm_mapping(self) -> MultiModelKeys:
         """
         Get the module prefix in multimodal models
