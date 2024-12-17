@@ -303,12 +303,11 @@ class ModifiedWhisperEncoder(WhisperEncoder):
     "audio", get_ultravox_max_audio_tokens)
 @MULTIMODAL_REGISTRY.register_processor(UltravoxMultiModalProcessor)
 class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
-    #TODO: not sure what is right thing to do here yet
     packed_modules_mapping = {}
-    #should all llama3 modules be supported here?
-    #source: https://github.com/fixie-ai/ultravox/blob/812f58c5f50c02589c08668d9afe6e4f8c6d0d74/ultravox/model/ultravox_config.py#L20
+    # llama3 supported modules
     supported_lora_modules = [
-        'linear_k', 'linear_q', 'k_proj', 'q_proj'
+        'up_proj', 'down_proj', 'gate_proj', 'v_proj', 'o_proj', 'k_proj',
+        'q_proj'
     ]
     embedding_modules = {}
     embedding_padding_modules = []
@@ -321,7 +320,6 @@ class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
         self.multi_modal_config = multimodal_config
         assert self.multi_modal_config
 
-        #TODO: maybe log a warning if lora config is present in UltravoxConfig?
         #TODO: figure out if these prefixes need tweaking to support LoRA and/or
         #use LLMWrapper or not like this https://github.com/vllm-project/vllm/pull/7199/files#diff-7b8a4e258637b7c94389c745c449c52137d33cf92957f3e5bcb18a0ee204b21bR807
 
@@ -368,8 +366,8 @@ class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
         """
         Get the module prefix in multimodal models
         """
-        return MultiModelKeys.from_string_field(language_model="language_model",
-                                                tower_model="audio_tower")
+        return MultiModelKeys.from_string_field(
+            language_model="language_model", tower_model="audio_tower")
 
     def _audio_features_to_embeddings(
             self, input_features: torch.Tensor) -> torch.Tensor:

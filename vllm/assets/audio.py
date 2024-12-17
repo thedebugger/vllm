@@ -17,7 +17,7 @@ class AudioAsset:
     def __init__(self, audio_path=None):
         if audio_path is None:
             audio_path = get_vllm_public_assets(filename=f"{self.name}.ogg",
-                                            s3_prefix=ASSET_DIR)
+                                                s3_prefix=ASSET_DIR)
 
         object.__setattr__(self, '_audio_path', audio_path)
 
