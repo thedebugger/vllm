@@ -303,11 +303,16 @@ class ModifiedWhisperEncoder(WhisperEncoder):
     "audio", get_ultravox_max_audio_tokens)
 @MULTIMODAL_REGISTRY.register_processor(UltravoxMultiModalProcessor)
 class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
-    packed_modules_mapping = {}
-    # llama3 supported modules
+    # same as llamaforcasuallm model
+    packed_modules_mapping = {
+        "qkv_proj": ["q_proj", "k_proj", "v_proj"],
+        "gate_up_proj": ["gate_proj", "up_proj"]
+    }
+
+    # LoRA specific attributes
     supported_lora_modules = [
-        'up_proj', 'down_proj', 'gate_proj', 'v_proj', 'o_proj', 'k_proj',
-        'q_proj'
+        "qkv_proj", "o_proj", "gate_up_proj", "down_proj", "embed_tokens",
+        "lm_head"
     ]
     embedding_modules = {}
     embedding_padding_modules = []
