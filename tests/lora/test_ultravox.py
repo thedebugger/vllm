@@ -8,15 +8,16 @@ from transformers import AutoTokenizer
 from vllm.lora.request import LoRARequest
 from vllm.platforms import current_platform
 
-MODEL_NAME = "fixie-ai/ultravox-v0_3"
+ULTRAVOX_MODEL_NAME = "fixie-ai/ultravox-v0_3"
+LLMA_MODEL_NAME = "meta-llama/Llama-3.1-8B-Instruct"
 
 VLLM_PLACEHOLDER = "<|reserved_special_token_0|>"
 
 EXPECTED_OUTPUT = ["Fool mate"]
 
 
-def _get_prompt(audio_count, question, placeholder):
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+def _get_prompt(audio_count, question, placeholder, model_name):
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     placeholder = f"{placeholder}\n" * audio_count
 
     return tokenizer.apply_chat_template([{
@@ -27,7 +28,7 @@ def _get_prompt(audio_count, question, placeholder):
                                          add_generation_prompt=True)
 
 
-def do_sample(llm: vllm.LLM, lora_path: str, lora_id: int) -> List[str]:
+def do_sample(llm: vllm.LLM, lora_path: str, lora_id: int, model_name: str) -> List[str]:
     sampling_params = vllm.SamplingParams(
         temperature=0,
         max_tokens=1000,
@@ -36,7 +37,7 @@ def do_sample(llm: vllm.LLM, lora_path: str, lora_id: int) -> List[str]:
     inputs = [{
         "prompt":
         _get_prompt(0, "Tell me about a silly chess move in 20 words",
-                    VLLM_PLACEHOLDER),
+                    VLLM_PLACEHOLDER, model_name),
     }]
 
     outputs = llm.generate(
@@ -55,8 +56,8 @@ def do_sample(llm: vllm.LLM, lora_path: str, lora_id: int) -> List[str]:
 
 
 def test_fixie_lora(llama3_1_8b_chess_lora):
-    llm = vllm.LLM(MODEL_NAME,
-                   max_num_seqs=2,
+    llm = vllm.LLM(LLMA_MODEL_NAME,
+                   max_num_seqs=128,
                    enable_lora=True,
                    max_loras=4,
                    max_lora_rank=128,
@@ -64,7 +65,22 @@ def test_fixie_lora(llama3_1_8b_chess_lora):
                    dtype="bfloat16",
                    max_model_len=4096,
                    enforce_eager=True)
-    output1 = do_sample(llm, llama3_1_8b_chess_lora, lora_id=1)
+    output1 = do_sample(llm, llama3_1_8b_chess_lora, lora_id=1, model_name=LLMA_MODEL_NAME)
+    for i in range(len(EXPECTED_OUTPUT)):
+        assert EXPECTED_OUTPUT[i].startswith(output1[i])
+    return None
+
+def test_ultravox_lora(llama3_1_8b_chess_lora):
+    llm = vllm.LLM(ULTRAVOX_MODEL_NAME,
+                   max_num_seqs=128,
+                   enable_lora=True,
+                   max_loras=4,
+                   max_lora_rank=128,
+                   trust_remote_code=True,
+                   dtype="bfloat16",
+                   max_model_len=4096,
+                   enforce_eager=True)
+    output1 = do_sample(llm, llama3_1_8b_chess_lora, lora_id=1, model_name=ULTRAVOX_MODEL_NAME)
     for i in range(len(EXPECTED_OUTPUT)):
         assert EXPECTED_OUTPUT[i].startswith(output1[i])
     return None
