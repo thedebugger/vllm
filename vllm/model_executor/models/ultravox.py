@@ -22,6 +22,7 @@ from vllm.model_executor.layers.activation import SiluAndMul, get_act_fn
 from vllm.model_executor.layers.layernorm import RMSNorm
 from vllm.model_executor.layers.sampler import SamplerOutput, get_sampler
 from vllm.model_executor.model_loader.loader import DefaultModelLoader
+from vllm.model_executor.models.module_mapping import MultiModelKeys
 from vllm.model_executor.sampling_metadata import SamplingMetadata
 from vllm.multimodal import MULTIMODAL_REGISTRY, NestedTensors
 from vllm.multimodal.processing import (BaseMultiModalProcessor,
@@ -29,10 +30,9 @@ from vllm.multimodal.processing import (BaseMultiModalProcessor,
                                         MultiModalDataItems, ProcessorInputs,
                                         PromptReplacement)
 from vllm.sequence import IntermediateTensors
-from vllm.model_executor.models.module_mapping import MultiModelKeys
 from vllm.transformers_utils.configs.ultravox import UltravoxConfig
 
-from .interfaces import SupportsMultiModal, SupportsPP, SupportsLoRA
+from .interfaces import SupportsLoRA, SupportsMultiModal, SupportsPP
 from .utils import (AutoWeightsLoader, WeightsMapper, flatten_bn,
                     init_vllm_registered_model, maybe_prefix,
                     merge_multimodal_embeddings_from_map)
@@ -303,14 +303,16 @@ class ModifiedWhisperEncoder(WhisperEncoder):
     "audio", get_ultravox_max_audio_tokens)
 @MULTIMODAL_REGISTRY.register_processor(UltravoxMultiModalProcessor)
 class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
-    # same as llamaforcasuallm (language model) minus embedding and other modules
-    # embedding modules haven't been added as a caution since it could impact text 
-    # but not audio
+    # same as llamaforcasuallm (language model) minus embedding and other
+    # modules. embedding modules haven't been added as a caution
+    # since it could affect text but not audio
     packed_modules_mapping = {
         "qkv_proj": ["q_proj", "k_proj", "v_proj"],
         "gate_up_proj": ["gate_proj", "up_proj"]
     }
 
+    #lm_head is not added for now since it requires logits_processor
+    # which is missing from ultravox
     supported_lora_modules = [
         "qkv_proj", "o_proj", "gate_up_proj", "down_proj"
     ]
@@ -324,9 +326,6 @@ class UltravoxModel(nn.Module, SupportsMultiModal, SupportsPP, SupportsLoRA):
         self.config = config
         self.multi_modal_config = multimodal_config
         assert self.multi_modal_config
-
-        #TODO: figure out if these prefixes need tweaking to support LoRA and/or
-        #use LLMWrapper or not like this https://github.com/vllm-project/vllm/pull/7199/files#diff-7b8a4e258637b7c94389c745c449c52137d33cf92957f3e5bcb18a0ee204b21bR807
 
         self.secondary_weights = []
         self.audio_tower = ModifiedWhisperEncoder(config.audio_config)

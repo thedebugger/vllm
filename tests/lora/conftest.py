@@ -160,7 +160,7 @@ def llama3_1_8b_chess_lora():
 
 @pytest.fixture(scope="session")
 def llama3_1_8b_ultravox_chess_lora():
-    # ultravox chess lora is result of transformation of above chess lora for llama
+    # ultravox chess lora is result of transformation of above chess llama lora
     return snapshot_download(repo_id="thedebugger11/ultravox-chess-lora")
 
 

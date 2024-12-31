@@ -387,8 +387,6 @@ class LoRAModelManager(AdapterModelManager):
         for module_name, module in self.modules.items():
             module_lora = lora_model.get_lora(module_name)
             if module_lora:
-                logger.debug("Setting LoRA. int id: %d, module: %s",
-                             lora_model.id, module_name)
                 module_lora.optimize()
                 # Bias is not explicitly enabled with the flag enable_lora_bias.
                 bias = module_lora.bias
@@ -409,7 +407,8 @@ class LoRAModelManager(AdapterModelManager):
 
         if len(missing_modules) > 0:
             logger.warning(
-                "Lora adapter int id %d is activated but is missing base model modules %s",
+                "Lora adapter int id %d is activated but is missing \
+                    base model modules %s which could impact output",
                 lora_model.id, missing_modules)
         return True
 
@@ -467,10 +466,6 @@ class LoRAModelManager(AdapterModelManager):
         for module_name, module in self.model.named_modules(
                 remove_duplicate=False):
 
-            logger.debug(
-                "Create lora module if applicable %s",
-                module_name,
-            )
             if isinstance(module, PPMissingLayer):
                 continue
             if not self._match_target_modules(module_name):
@@ -517,15 +512,12 @@ class LoRAModelManager(AdapterModelManager):
             if self.supports_mm and not isinstance(new_module,
                                                    BaseLayerWithLoRA):
                 logger.warning(
-                    "%s module will be ignored because it isn't of type BaseLayerWithLoRA",
+                    "%s module will be ignored because it isn't of type \
+                        BaseLayerWithLoRA",
                     module_name,
                 )
                 continue
 
-            logger.debug(
-                "Going to apply lora on %s module",
-                module_name,
-            )
             self.register_module(module_name, new_module)
             self._register_packed_modules(module_name)
             # All lora layers share the same punica_wrapper based on reference.
@@ -541,7 +533,6 @@ class LoRAModelManager(AdapterModelManager):
             rank: int,
             scaling_factor: Optional[float],
             embedding_modules: Optional[Dict[str, str]] = None) -> LoRAModel:
-        logger.debug(f"Creating a dummy lora with id: {lora_id}")
         """Create zero-initialized LoRAModel for warmup."""
         model = LoRAModel(lora_id, rank, {}, scaling_factor)
         for module_name, module in self.model.named_modules():
@@ -654,7 +645,6 @@ class LoRAModelManager(AdapterModelManager):
                 if replacement_loras[i]:
                     continue
                 replacement_loras[i] = None
-
             lora_model.loras[module_name] = PackedLoRALayerWeights.pack(
                 replacement_loras)
 
