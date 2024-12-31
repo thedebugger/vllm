@@ -10,7 +10,7 @@ from vllm.assets.base import get_vllm_public_assets, vLLM_S3_BUCKET_URL
 ASSET_DIR = "multimodal_asset"
 
 
-@dataclass(frozen=True)
+@dataclass
 class AudioAsset:
     name: Literal["winning_call", "mary_had_lamb"]
 
@@ -18,8 +18,7 @@ class AudioAsset:
         if audio_path is None:
             audio_path = get_vllm_public_assets(filename=f"{self.name}.ogg",
                                                 s3_prefix=ASSET_DIR)
-
-        object.__setattr__(self, '_audio_path', audio_path)
+        self._audio_path = audio_path
 
     @property
     def audio_and_sample_rate(self) -> Tuple[np.ndarray, int]:
